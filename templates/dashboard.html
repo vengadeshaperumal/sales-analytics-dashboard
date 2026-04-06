@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Financial Dashboard - Business Analytics & Real-time Insights">
+    <title>Financial Dashboard - Analytics Console</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navigation Bar -->
+        <nav class="dashboard-nav" role="navigation">
+            <div class="nav-left">
+                <h1 class="nav-logo">💼 Dashboard</h1>
+            </div>
+            <div class="nav-actions">
+                <button class="btn-icon" onclick="window.location.href='/'" title="Upload CSV">
+                    📤 Upload
+                </button>
+                <button class="btn-icon" onclick="resetData()" title="Reset data">
+                    🔄 Reset
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="dashboard-main" role="main">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="hero-content">
+                    <h2>📊 Sales Analytics Dashboard</h2>
+                    <p>Real-time business performance tracking</p>
+                </div>
+            </section>
+
+            <!-- KPI Cards Section -->
+            <section class="kpi-section">
+                <h3 class="section-title">Key Performance Indicators</h3>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">💰</div>
+                        <div class="kpi-content">
+                            <p class="kpi-label">Total Revenue</p>
+                            <p class="kpi-value">₹{{ "%.0f"|format(summary_stats.total_revenue) }}</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">📦</div>
+                        <div class="kpi-content">
+                            <p class="kpi-label">Units Sold</p>
+                            <p class="kpi-value">{{ "%.0f"|format(summary_stats.total_quantity_sold) }}</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">🛍️</div>
+                        <div class="kpi-content">
+                            <p class="kpi-label">Transactions</p>
+                            <p class="kpi-value">{{ summary_stats.total_transactions }}</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">💹</div>
+                        <div class="kpi-content">
+                            <p class="kpi-label">Avg Value/Transaction</p>
+                            <p class="kpi-value">₹{{ "%.2f"|format(summary_stats.average_transaction_value) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Top Insights Section -->
+            <section class="insights-cards-section">
+                <h3 class="section-title">⭐ Top Insights</h3>
+                <div class="insights-cards-grid">
+                    {% if insights.top_selling_product %}
+                    <div class="insight-highlight-card">
+                        <div class="insight-icon">🏆</div>
+                        <h4>Top Product</h4>
+                        <p class="insight-title">{{ insights.top_selling_product.product }}</p>
+                        <p class="insight-value">₹{{ "%.0f"|format(insights.top_selling_product.revenue) }}</p>
+                        <p class="insight-meta">{{ insights.top_selling_product.percentage }}% of total revenue</p>
+                    </div>
+                    {% endif %}
+
+                    {% if insights.best_performing_store %}
+                    <div class="insight-highlight-card">
+                        <div class="insight-icon">🏪</div>
+                        <h4>Best Store</h4>
+                        <p class="insight-title">{{ insights.best_performing_store.store }}</p>
+                        <p class="insight-value">₹{{ "%.0f"|format(insights.best_performing_store.revenue) }}</p>
+                        <p class="insight-meta">{{ insights.best_performing_store.percentage }}% of total revenue</p>
+                    </div>
+                    {% endif %}
+
+                    {% if insights.best_performing_day %}
+                    <div class="insight-highlight-card">
+                        <div class="insight-icon">📅</div>
+                        <h4>Peak Day</h4>
+                        <p class="insight-title">{{ insights.best_performing_day.date }}</p>
+                        <p class="insight-value">₹{{ "%.0f"|format(insights.best_performing_day.revenue) }}</p>
+                        <p class="insight-meta">{{ insights.best_performing_day.transaction_count }} transactions</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <h3 class="section-title">📈 Revenue Analytics</h3>
+
+                <!-- Primary Charts -->
+                <div class="chart-grid primary-charts">
+                    <div class="chart-item">
+                        <h4>Daily Revenue Performance</h4>
+                        <div id="daily_chart_loading" class="chart-loading">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        {{ daily_chart|safe }}
+                    </div>
+
+                    <div class="chart-item">
+                        <h4>Revenue Trend Over Time</h4>
+                        <div id="trend_chart_loading" class="chart-loading">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        {{ trend_chart|safe }}
+                    </div>
+                </div>
+
+                <!-- Revenue Distribution -->
+                <div class="chart-item full-width">
+                    <h4>Revenue by Store Location</h4>
+                    <div id="store_pie_loading" class="chart-loading">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    {{ store_pie|safe }}
+                </div>
+
+                <!-- Heatmap -->
+                <div class="chart-item full-width">
+                    <h4>Product Performance by Store (Heatmap)</h4>
+                    <div id="heatmap_loading" class="chart-loading">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    {{ heatmap|safe }}
+                </div>
+
+                <!-- Store Comparison -->
+                <div class="chart-item">
+                    <h4>Store Performance Comparison</h4>
+                    <div id="store_chart_loading" class="chart-loading">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    {{ store_chart|safe }}
+                </div>
+            </section>
+
+            <!-- Data Tables Section -->
+            <section class="data-tables-section">
+                <h3 class="section-title">📊 Detailed Performance Data</h3>
+
+                {% if insights.product_performance %}
+                <div class="table-card">
+                    <h4>Product Sales Performance</h4>
+                    <div class="table-responsive">
+                        <table role="grid" aria-label="Product performance metrics">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Revenue</th>
+                                    <th>% Share</th>
+                                    <th>Units</th>
+                                    <th>Transactions</th>
+                                    <th>Avg Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in insights.product_performance[:10] %}
+                                <tr>
+                                    <td><strong>{{ product.product }}</strong></td>
+                                    <td>₹{{ "%.0f"|format(product.total_revenue) }}</td>
+                                    <td>{{ product.percentage }}%</td>
+                                    <td>{{ product.total_units }}</td>
+                                    <td>{{ product.transaction_count }}</td>
+                                    <td>₹{{ "%.2f"|format(product.avg_transaction_value) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if insights.store_performance %}
+                <div class="table-card">
+                    <h4>Store Performance Analysis</h4>
+                    <div class="table-responsive">
+                        <table role="grid" aria-label="Store performance metrics">
+                            <thead>
+                                <tr>
+                                    <th>Store</th>
+                                    <th>Revenue</th>
+                                    <th>% Share</th>
+                                    <th>Units</th>
+                                    <th>Transactions</th>
+                                    <th>Avg Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for store in insights.store_performance[:10] %}
+                                <tr>
+                                    <td><strong>{{ store.store }}</strong></td>
+                                    <td>₹{{ "%.0f"|format(store.total_revenue) }}</td>
+                                    <td>{{ store.percentage }}%</td>
+                                    <td>{{ store.total_units }}</td>
+                                    <td>{{ store.transaction_count }}</td>
+                                    <td>₹{{ "%.2f"|format(store.avg_transaction_value) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+
+            </section>
+        </main>
+
+        <footer role="contentinfo">
+            <p>&copy; 2024 Retail Financial Analyzer | Business Performance Insights</p>
+        </footer>
+    </div>
+
+    <script>
+        // Chart loading management
+        function hideLoadingStates() {
+            const loadingElements = document.querySelectorAll('.chart-loading');
+            loadingElements.forEach(element => {
+                element.style.display = 'none';
+            });
+        }
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading states after a short delay to ensure charts are rendered
+            setTimeout(hideLoadingStates, 1000);
+
+            // Add smooth scrolling for better UX
+            const chartLinks = document.querySelectorAll('a[href^="#"]');
+            chartLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+        });
+
+        function resetData() {
+            if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
+                fetch('/reset', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/';
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+
+        // Performance optimization: lazy load chart interactions
+        let chartInteractionInitialized = false;
+        function initializeChartInteractions() {
+            if (chartInteractionInitialized) return;
+            chartInteractionInitialized = true;
+
+            // Add any chart-specific interactions here if needed
+            console.log('Chart interactions initialized');
+        }
+
+        // Initialize on scroll for better performance
+        let scrollInitialized = false;
+        window.addEventListener('scroll', function() {
+            if (!scrollInitialized && window.scrollY > 100) {
+                scrollInitialized = true;
+                initializeChartInteractions();
+            }
+        });
+    </script>
+</body>
+</html>

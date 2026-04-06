@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Financial Dashboard - Upload and analyze sales data">
+    <title>Financial Dashboard - Upload Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="upload-page-wrapper">
+        <!-- Top Navigation -->
+        <nav class="upload-navbar" role="navigation">
+            <div class="nav-brand">📊 Financial Analytics</div>
+        </nav>
+
+        <!-- Hero Section -->
+        <div class="upload-hero">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1>Upload Your Sales Data</h1>
+                <p>Transform raw data into actionable business insights with AI-powered analytics</p>
+            </div>
+        </div>
+
+        <div class="upload-container">
+            <main class="upload-main" role="main">
+                <div class="upload-content">
+                    <!-- Left: Upload Form -->
+                    <div class="upload-form-section">
+                        <div class="form-card">
+                            <div class="form-header">
+                                <h2>📤 Import CSV Data</h2>
+                                <p class="form-subtitle">Upload your sales transaction data</p>
+                            </div>
+
+                            <form id="uploadForm" enctype="multipart/form-data" role="form" aria-label="CSV Upload Form">
+                                <!-- File Upload Input -->
+                                <div class="file-upload-area">
+                                    <input type="file" id="csvFile" name="file" accept=".csv" required aria-label="Select CSV file">
+                                    <label for="csvFile" class="file-upload-label">
+                                        <div class="upload-icon">📁</div>
+                                        <div class="upload-text">
+                                            <p class="upload-title">Drag & drop your CSV file here</p>
+                                            <p class="upload-hint">or click to browse your computer</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <!-- File Info Display -->
+                                <div id="fileInfo" class="file-info-display" role="status" aria-live="polite">
+                                    <div class="file-icon">✓</div>
+                                    <div class="file-details">
+                                        <p id="fileName"></p>
+                                        <p id="fileSize"></p>
+                                    </div>
+                                    <button type="button" class="file-remove" onclick="document.getElementById('csvFile').value = ''; document.getElementById('fileInfo').classList.remove('show');" aria-label="Remove selected file">✕</button>
+                                </div>
+                                
+                                <!-- Requirements -->
+                                <div class="requirements-box">
+                                    <h4>📋 Required Columns</h4>
+                                    <div class="req-columns">
+                                        <span class="req-badge">date</span>
+                                        <span class="req-badge">product</span>
+                                        <span class="req-badge">quantity</span>
+                                        <span class="req-badge">price</span>
+                                        <span class="req-badge">store</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Submit Button -->
+                                <button type="submit" class="btn-upload" id="uploadBtn" aria-label="Upload and analyze data">
+                                    <span class="btn-icon">⚡</span>
+                                    <span>Upload & Analyze</span>
+                                </button>
+                            </form>
+                            
+                            <!-- Status Messages -->
+                            <div id="uploadStatus" class="status-message" role="alert" aria-live="assertive"></div>
+
+                            <!-- Error Display -->
+                            {% if error %}
+                            <div class="error-message" role="alert">
+                                <span class="error-icon">⚠️</span>
+                                <span><strong>Error:</strong> {{ error }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Right: Sample Data & Info -->
+                    <div class="info-section">
+                        <!-- Sample CSV Format -->
+                        <div class="info-card">
+                            <div class="info-header">
+                                <h3>📊 Sample CSV Format</h3>
+                            </div>
+                            <div class="sample-table-wrapper">
+                                <table class="sample-table" role="presentation">
+                                    <thead>
+                                        <tr>
+                                            <th>date</th>
+                                            <th>product</th>
+                                            <th>quantity</th>
+                                            <th>price</th>
+                                            <th>store</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2024-01-15</td>
+                                            <td>Laptop</td>
+                                            <td>2</td>
+                                            <td>₹1,20,000</td>
+                                            <td>Chennai</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2024-01-15</td>
+                                            <td>Mouse</td>
+                                            <td>5</td>
+                                            <td>₹1,500</td>
+                                            <td>Coimbatore</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2024-01-16</td>
+                                            <td>Monitor</td>
+                                            <td>1</td>
+                                            <td>₹25,000</td>
+                                            <td>Madurai</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Help Tips -->
+                        <div class="info-card">
+                            <div class="info-header">
+                                <h3>✅ Format Guidelines</h3>
+                            </div>
+                            <div class="tips-list">
+                                <div class="tip-item">
+                                    <div class="tip-icon">📅</div>
+                                    <div class="tip-text">
+                                        <strong>Dates</strong><br>
+                                        Any common format (YYYY-MM-DD, MM/DD/YYYY)
+                                    </div>
+                                </div>
+                                <div class="tip-item">
+                                    <div class="tip-icon">🔢</div>
+                                    <div class="tip-text">
+                                        <strong>Numeric Fields</strong><br>
+                                        Quantity, price as numbers
+                                    </div>
+                                </div>
+                                <div class="tip-item">
+                                    <div class="tip-icon">💾</div>
+                                    <div class="tip-text">
+                                        <strong>File Size</strong><br>
+                                        Max 10MB CSV files supported
+                                    </div>
+                                </div>
+                                <div class="tip-item">
+                                    <div class="tip-icon">⚡</div>
+                                    <div class="tip-text">
+                                        <strong>Processing</strong><br>
+                                        Instant analytics in seconds
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <footer class="upload-footer" role="contentinfo">
+            <p>&copy; 2024 Financial Analytics | Powered by Advanced Data Intelligence</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
